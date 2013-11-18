@@ -90,7 +90,7 @@ class MethodReflectionTest extends \PHPUnit_Framework_TestCase
         $reflectionMethod = new MethodReflection('ZendTest\Code\Reflection\TestAsset\TestSampleClass11', 'emptyFunction');
         $body = $reflectionMethod->getBody();
         $this->assertEquals(trim($body), "");
-
+        
         $reflectionMethod = new MethodReflection('ZendTest\Code\Reflection\TestAsset\TestSampleClass11', 'visibility');
         $body = $reflectionMethod->getBody();
         $this->assertEquals(trim($body), "return 'visibility';");
@@ -99,9 +99,7 @@ class MethodReflectionTest extends \PHPUnit_Framework_TestCase
     public function testInternalMethodContentsReturn()
     {
         $reflectionMethod = new MethodReflection('DOMDocument', 'validate');
-
-        $this->setExpectedException('Zend\Code\Reflection\Exception\InvalidArgumentException');
-        $contents = $reflectionMethod->getContents();
+        $this->assertEquals('', $reflectionMethod->getContents());
     }
 
     public function testMethodContentsReturnWithoutDocBlock()
@@ -141,7 +139,7 @@ CONTENTS;
         $contents = ' public function inline3() { return \'inline3\'; }';
         $reflectionMethod = new MethodReflection('ZendTest\Code\Reflection\TestAsset\TestSampleClass11', 'inline3');
         $this->assertEquals($contents, $reflectionMethod->getContents(false));
-
+        
         $contents = <<<'CONTENTS'
     public function visibility()
     {
@@ -284,5 +282,14 @@ CONTENTS;
                     ->will($this->returnValue(false));
 
         $this->assertFalse($reflectionMethod->getAnnotations($annotationManager));
+    }
+
+    /**
+     * @group 5062
+     */
+    public function testGetContentsWithCoreClass()
+    {
+        $reflectionMethod = new MethodReflection('DateTime', 'format');
+        $this->assertEquals("", $reflectionMethod->getContents(false));
     }
 }

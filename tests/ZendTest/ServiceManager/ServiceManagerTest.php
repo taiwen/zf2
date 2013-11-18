@@ -340,6 +340,18 @@ class ServiceManagerTest extends TestCase
         $this->assertEquals('bar', $obj->foo);
     }
 
+    public function testHasReturnsFalseOnNonStringsAndArrays()
+    {
+        $obj = new \stdClass();
+        $this->assertFalse($this->serviceManager->has($obj));
+    }
+
+    public function testHasAcceptsArrays()
+    {
+        $this->serviceManager->setInvokableClass('foobar', 'foo');
+        $this->assertTrue($this->serviceManager->has(array('foobar', 'foo_bar')));
+    }
+
     /**
      * @covers Zend\ServiceManager\ServiceManager::has
      */
@@ -569,6 +581,27 @@ class ServiceManagerTest extends TestCase
         $this->assertSame(false, $abstractFactory->inexistingServiceCheckResult);
 
         $this->assertInstanceOf('stdClass', $service);
+    }
+
+    public function testMultipleAbstractFactoriesWithOneLookingForANonExistingServiceDuringCanCreate()
+    {
+        $abstractFactory = new TestAsset\TrollAbstractFactory;
+        $anotherAbstractFactory = $this->getMock('Zend\ServiceManager\AbstractFactoryInterface');
+        $anotherAbstractFactory
+            ->expects($this->exactly(2))
+            ->method('canCreateServiceWithName')
+            ->with(
+                $this->serviceManager,
+                $this->logicalOr('somethingthatcanbecreated', 'nonexistingservice'),
+                $this->logicalOr('SomethingThatCanBeCreated', 'NonExistingService')
+            )
+            ->will($this->returnValue(false));
+
+        $this->serviceManager->addAbstractFactory($abstractFactory);
+        $this->serviceManager->addAbstractFactory($anotherAbstractFactory);
+
+        $this->assertTrue($this->serviceManager->has('SomethingThatCanBeCreated'));
+        $this->assertFalse($abstractFactory->inexistingServiceCheckResult);
     }
 
     public function testWaitingAbstractFactory()

@@ -34,6 +34,7 @@ class ElementTest extends TestCase
             'type'     => 'text',
             'class'    => 'text-element',
             'data-foo' => 'bar',
+            'x-autocompletetype' => 'email'
         );
         $element->setAttributes($attributes);
         $this->assertEquals($attributes, $element->getAttributes());
@@ -169,6 +170,14 @@ class ElementTest extends TestCase
 
         $labelOptions = $element->getLabelOptions();
         $this->assertEquals(array('moar' => 'foo'), $labelOptions);
+    }
+
+    public function testCanSetSingleOptionForLabel()
+    {
+        $element = new Element('foo');
+        $element->setOption('label', 'foo');
+        $option = $element->getOption('label');
+        $this->assertEquals('foo', $option);
     }
 
     public function testSetOptionsWrongInputRaisesException()
