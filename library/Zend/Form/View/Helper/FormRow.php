@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -12,8 +12,7 @@ namespace Zend\Form\View\Helper;
 use Zend\Form\Element\Button;
 use Zend\Form\ElementInterface;
 use Zend\Form\Exception;
-use Zend\Form\LabelOptionsAwareInterface;
-use Zend\Form\View\Helper\AbstractHelper;
+use Zend\Form\LabelAwareInterface;
 
 class FormRow extends AbstractHelper
 {
@@ -162,15 +161,13 @@ class FormRow extends AbstractHelper
 
         if (isset($label) && '' !== $label) {
 
-            $labelOptions = array();
             $labelAttributes = array();
 
-            if ($element instanceof LabelOptionsAwareInterface) {
-                $labelOptions    = $element->getLabelOptions();
+            if ($element instanceof LabelAwareInterface) {
                 $labelAttributes = $element->getLabelAttributes();
             }
 
-            if (empty($labelOptions) || $labelOptions['disable_html_escape'] == false) {
+            if (! $element instanceof LabelAwareInterface || ! $element->getLabelOption('disable_html_escape')) {
                 $label = $escapeHtmlHelper($label);
             }
 
@@ -187,7 +184,11 @@ class FormRow extends AbstractHelper
                     $label,
                     $elementString);
             } else {
-                if ($element->hasAttribute('id')) {
+                // Ensure element and label will be separated if element has an `id`-attribute.
+                // If element has label option `always_wrap` it will be nested in any case.
+                if ($element->hasAttribute('id')
+                    && ($element instanceof LabelAwareInterface && !$element->getLabelOption('always_wrap'))
+                ) {
                     $labelOpen = '';
                     $labelClose = '';
                     $label = $labelHelper($element);
@@ -196,7 +197,9 @@ class FormRow extends AbstractHelper
                     $labelClose = $labelHelper->closeTag();
                 }
 
-                if ($label !== '' && !$element->hasAttribute('id')) {
+                if ($label !== '' && (!$element->hasAttribute('id'))
+                    || ($element instanceof LabelAwareInterface && $element->getLabelOption('always_wrap'))
+                ) {
                     $label = '<span>' . $label . '</span>';
                 }
 

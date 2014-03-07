@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -11,7 +11,6 @@ namespace ZendTest\Math;
 
 use Zend\Math;
 use Zend\Math\Rand;
-use RandomLib;
 
 /**
  * @group      Zend_Math
@@ -97,6 +96,17 @@ class RandTest extends \PHPUnit_Framework_TestCase
             'min parameter must be lower than max parameter'
         );
         $rand = Rand::getInteger(100, 0);
+    }
+
+    public function testIntegerRangeOverflow()
+    {
+        $values = 0;
+        $cycles = 100;
+        for ($i = 0; $i < $cycles; $i++) {
+            $values += Rand::getInteger(0, PHP_INT_MAX);
+        }
+
+        $this->assertFalse($values === 0);
     }
 
     public function testRandFloat()

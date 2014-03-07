@@ -3,13 +3,12 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\I18n\Filter;
 
-use Zend\I18n\Exception;
 use Zend\Stdlib\ErrorHandler;
 
 class NumberFormat extends NumberParse
@@ -24,13 +23,15 @@ class NumberFormat extends NumberParse
      */
     public function filter($value)
     {
+        if (!is_scalar($value)) {
+            return $value;
+        }
+
         if (!is_int($value)
-            && !is_float($value)) {
-
+            && !is_float($value)
+        ) {
             $result = parent::filter($value);
-
         } else {
-
             ErrorHandler::start();
 
             $result = $this->getFormatter()->format(
@@ -39,7 +40,6 @@ class NumberFormat extends NumberParse
             );
 
             ErrorHandler::stop();
-
         }
 
         if (false !== $result) {

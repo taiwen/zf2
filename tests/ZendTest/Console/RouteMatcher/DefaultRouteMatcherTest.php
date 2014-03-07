@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  * @package   Zend_Console
  */
@@ -845,8 +845,45 @@ class DefaultRouteMatcherTest extends \PHPUnit_Framework_TestCase
                     'something'   => null,
                 )
             ),
-
-
+            /**
+             * @bug ZF2-5671
+             * @link https://github.com/zendframework/zf2/issues/5671
+             */
+            'mandatory-literal-camel-case' => array(
+                'FooBar',
+                array('FooBar'),
+                array(),
+            ),
+            'mandatory-literal-camel-case-no-match' => array(
+                'FooBar',
+                array('foobar'),
+                null,
+            ),
+            'optional-literal-camel-case' => array(
+                '[FooBar]',
+                array('FooBar'),
+                array(),
+            ),
+            'optional-literal-camel-case-no-match' => array(
+                '[FooBar]',
+                array('foobar'),
+                null,
+            ),
+            'optional-literal-alternative-camel-case' => array(
+                '[ FooBar | FoozBar ]',
+                array('FooBar'),
+                array(),
+            ),
+            'required-literal-alternative-camel-case' => array(
+                '( FooBar | FoozBar )',
+                array('FooBar'),
+                array(),
+            ),
+            'required-literal-alternative-camel-case-no-match' => array(
+                '( FooBar | FoozBar )',
+                array('baz'),
+                null,
+            ),
         );
     }
 

@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -536,30 +536,36 @@ class StripTagsTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($expected, $this->_filter->filter($input));
     }
 
-    /**
-     * Ensures that a warning is raised if array is used
-     *
-     * @return void
-     */
-    public function testWarningIsRaisedIfArrayUsed()
+    public function returnUnfilteredDataProvider()
     {
-        $input = array('<li data-name="Test User" data-id="11223"></li>', '<li data-name="Test User 2" data-id="456789"></li>');
-
-        ErrorHandler::start(E_USER_WARNING);
-        $filtered = $this->_filter->filter($input);
-        $err = ErrorHandler::stop();
-
-        $this->assertEquals($input, $filtered);
-        $this->assertInstanceOf('ErrorException', $err);
-        $this->assertContains('cannot filter', $err->getMessage());
+        return array(
+            array(null),
+            array(new \stdClass()),
+            array(array(
+                '<li data-name="Test User" data-id="11223"></li>',
+                '<li data-name="Test User 2" data-id="456789"></li>'
+            ))
+        );
     }
 
     /**
+     * @dataProvider returnUnfilteredDataProvider
      * @return void
      */
-    public function testReturnsNullIfNullIsUsed()
+    public function testReturnUnfiltered($input)
     {
-        $filtered = $this->_filter->filter(null);
-        $this->assertNull($filtered);
+        $this->assertEquals($input, $this->_filter->filter($input));
+    }
+
+    /**
+     * @link https://github.com/zendframework/zf2/issues/5465
+     */
+    public function testAttributeValueofZeroIsNotRemoved()
+    {
+        $input     = '<div id="0" data-custom="0" class="bogus"></div>';
+        $expected  = '<div id="0" data-custom="0"></div>';
+        $this->_filter->setTagsAllowed('div');
+        $this->_filter->setAttributesAllowed(array('id','data-custom'));
+        $this->assertEquals($expected, $this->_filter->filter($input));
     }
 }

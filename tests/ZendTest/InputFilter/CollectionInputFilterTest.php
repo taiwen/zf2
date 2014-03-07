@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -355,6 +355,9 @@ class CollectionInputFilterTest extends TestCase
         $this->assertCount(2, $messages);
         $this->assertArrayHasKey('foo', $messages[0]);
         $this->assertArrayHasKey('bar', $messages[1]);
+
+        $this->assertCount(1, $messages[0]['foo']);
+        $this->assertCount(1, $messages[1]['bar']);
     }
 
     public function testSetValidationGroupUsingFormStyle()
@@ -433,7 +436,30 @@ class CollectionInputFilterTest extends TestCase
     public function testSetRequired()
     {
         $this->filter->setIsRequired(true);
-        $this->assertEquals(true,$this->filter->getIsRequired());
+        $this->assertEquals(true, $this->filter->getIsRequired());
+    }
+
+    public function testNonRequiredFieldsAreValidated()
+    {
+        $invalidCollectionData = array(
+            array(
+                'foo' => ' bazbattoolong ',
+                'bar' => '12345',
+                'baz' => 'baztoolong',
+                'nest' => array(
+                    'foo' => ' bazbat ',
+                    'bar' => '12345',
+                    'baz' => '',
+                ),
+            )
+        );
+
+        $this->filter->setInputFilter($this->getBaseInputFilter());
+        $this->filter->setData($invalidCollectionData);
+
+        $this->assertFalse($this->filter->isValid());
+        $this->assertCount(2, current($this->filter->getInvalidInput()));
+        $this->assertArrayHasKey('baz', current($this->filter->getMessages()));
     }
 
     public function testNestedCollectionWithEmptyChild()

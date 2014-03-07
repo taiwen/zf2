@@ -3,11 +3,13 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
 namespace Zend\Config\Writer;
+
+use Zend\Config\Exception;
 
 class PhpArray extends AbstractWriter
 {
@@ -52,6 +54,53 @@ class PhpArray extends AbstractWriter
     }
 
     /**
+     * toFile(): defined by Writer interface.
+     *
+     * @see    WriterInterface::toFile()
+     * @param  string  $filename
+     * @param  mixed   $config
+     * @param  bool $exclusiveLock
+     * @return void
+     * @throws Exception\InvalidArgumentException
+     * @throws Exception\RuntimeException
+     */
+    public function toFile($filename, $config, $exclusiveLock = true)
+    {
+        if (empty($filename)) {
+            throw new Exception\InvalidArgumentException('No file name specified');
+        }
+
+        $flags = 0;
+        if ($exclusiveLock) {
+            $flags |= LOCK_EX;
+        }
+
+        set_error_handler(
+            function ($error, $message = '', $file = '', $line = 0) use ($filename) {
+                throw new Exception\RuntimeException(sprintf(
+                    'Error writing to "%s": %s',
+                    $filename, $message
+                ), $error);
+            }, E_WARNING
+        );
+
+        try {
+            // for Windows, paths are escaped.
+            $dirname = str_replace('\\', '\\\\', dirname($filename));
+
+            $string  = $this->toString($config);
+            $string  = str_replace("'" . $dirname, "__DIR__ . '", $string);
+
+            file_put_contents($filename, $string, $flags);
+        } catch (\Exception $e) {
+            restore_error_handler();
+            throw $e;
+        }
+
+        restore_error_handler();
+    }
+
+    /**
      * Recursively processes a PHP config array structure into a readable format.
      *
      * @param  array $config
@@ -76,10 +125,14 @@ class PhpArray extends AbstractWriter
                                   . $this->processIndented($value, $arraySyntax, $indentLevel)
                                   . str_repeat(self::INDENT_STRING, --$indentLevel) . $arraySyntax['close'] . ",\n";
                 }
-            } elseif (is_object($value)) {
+            } elseif (is_object($value) || is_string($value)) {
                 $arrayString .= var_export($value, true) . ",\n";
+            } elseif (is_bool($value)) {
+                $arrayString .= ($value ? 'true' : 'false') . ",\n";
+            } elseif ($value === null) {
+                $arrayString .= "null,\n";
             } else {
-                $arrayString .= "'" . addslashes($value) . "',\n";
+                $arrayString .= $value . ",\n";
             }
         }
 

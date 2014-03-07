@@ -3,11 +3,11 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
-namespace Zend\I18nTest\Validator;
+namespace ZendTest\I18n\Validator;
 
 use Locale;
 use Zend\I18n\Validator\PhoneNumber;
@@ -2036,7 +2036,7 @@ class PhoneNumberTest extends \PHPUnit_Framework_TestCase
             'patterns' => array(
                 'example' => array(
                     'fixed' => '21234567',
-                    'mobile' => '81234567',
+                    'mobile' => array('81234567','71234567'),
                     'tollfree' => '18001234',
                     'emergency' => '118',
                 ),
@@ -3078,20 +3078,23 @@ class PhoneNumberTest extends \PHPUnit_Framework_TestCase
     {
         foreach ($this->phone as $country => $parameters) {
             $this->validator->setCountry($country);
-            foreach ($parameters['patterns']['example'] as $type => $value) {
-                $this->validator->allowedTypes(array($type));
-                $this->assertTrue($this->validator->isValid($value));
+            foreach ($parameters['patterns']['example'] as $type => $values) {
+                $values = is_array($values) ? $values : array($values);
+                foreach ($values as $value) {
+                    $this->validator->allowedTypes(array($type));
+                    $this->assertTrue($this->validator->isValid($value));
 
-                // check with country code:
-                $countryCodePrefixed = $parameters['code'] . $value;
-                $this->assertTrue($this->validator->isValid($countryCodePrefixed));
+                    // check with country code:
+                    $countryCodePrefixed = $parameters['code'] . $value;
+                    $this->assertTrue($this->validator->isValid($countryCodePrefixed));
 
-                // check fully qualified E.123/E.164 international variants
-                $fullyQualifiedDoubleO = '00' . $parameters['code'] . $value;
-                $this->assertTrue($this->validator->isValid($fullyQualifiedDoubleO));
+                    // check fully qualified E.123/E.164 international variants
+                    $fullyQualifiedDoubleO = '00' . $parameters['code'] . $value;
+                    $this->assertTrue($this->validator->isValid($fullyQualifiedDoubleO));
 
-                $fullyQualifiedPlus = '+' . $parameters['code'] . $value;
-                $this->assertTrue($this->validator->isValid($fullyQualifiedPlus));
+                    $fullyQualifiedPlus = '+' . $parameters['code'] . $value;
+                    $this->assertTrue($this->validator->isValid($fullyQualifiedPlus));
+                }
             }
         }
     }
@@ -3104,20 +3107,23 @@ class PhoneNumberTest extends \PHPUnit_Framework_TestCase
         $this->validator->allowPossible(true);
         foreach ($this->phone as $country => $parameters) {
             $this->validator->setCountry($country);
-            foreach ($parameters['patterns']['example'] as $type => $value) {
-                $this->validator->allowedTypes(array($type));
-                $this->assertTrue($this->validator->isValid($value));
+            foreach ($parameters['patterns']['example'] as $type => $values) {
+                $values = is_array($values) ? $values : array($values);
+                foreach ($values as $value) {
+                    $this->validator->allowedTypes(array($type));
+                    $this->assertTrue($this->validator->isValid($value));
 
-                // check with country code:
-                $countryCodePrefixed = $parameters['code'] . $value;
-                $this->assertTrue($this->validator->isValid($countryCodePrefixed));
+                    // check with country code:
+                    $countryCodePrefixed = $parameters['code'] . $value;
+                    $this->assertTrue($this->validator->isValid($countryCodePrefixed));
 
-                // check fully qualified E.123/E.164 international variants
-                $fullyQualifiedDoubleO = '00'. $parameters['code'] . $value;
-                $this->assertTrue($this->validator->isValid($fullyQualifiedDoubleO), $fullyQualifiedDoubleO);
+                    // check fully qualified E.123/E.164 international variants
+                    $fullyQualifiedDoubleO = '00'. $parameters['code'] . $value;
+                    $this->assertTrue($this->validator->isValid($fullyQualifiedDoubleO), $fullyQualifiedDoubleO);
 
-                $fullyQualifiedPlus = '+'. $parameters['code'] . $value;
-                $this->assertTrue($this->validator->isValid($fullyQualifiedPlus), $fullyQualifiedPlus);
+                    $fullyQualifiedPlus = '+'. $parameters['code'] . $value;
+                    $this->assertTrue($this->validator->isValid($fullyQualifiedPlus), $fullyQualifiedPlus);
+                }
             }
         }
     }
@@ -3127,6 +3133,12 @@ class PhoneNumberTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($this->validator->allowPossible());
         $this->validator->allowPossible(true);
         $this->assertTrue($this->validator->allowPossible());
+    }
+
+    public function testSetCountryMethodIsCaseInsensitive()
+    {
+        $this->validator->setCountry('us');
+        $this->assertSame('US', $this->validator->getCountry());
     }
 
     public function testInvalidTypes()

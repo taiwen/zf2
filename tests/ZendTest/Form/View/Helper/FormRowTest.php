@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -400,5 +400,25 @@ class FormRowTest extends TestCase
         $this->helper->__invoke($element);
 
         $this->assertSame('append', $this->helper->getLabelPosition());
+    }
+
+    public function testLabelOptionAlwaysWrapDefaultsToFalse()
+    {
+        $element = new Element('foo');
+        $this->assertEmpty($element->getLabelOption('always_wrap'));
+    }
+
+    public function testCanSetOptionToWrapElementInLabel()
+    {
+        $element = new Element('foo', array(
+            'label_options' => array(
+                'always_wrap' => true
+            )
+        ));
+        $element->setAttribute('id', 'bar');
+        $element->setLabel('baz');
+
+        $markup = $this->helper->render($element);
+        $this->assertRegexp('#^<label><span>baz</span><input name="foo" id="bar" type="text" value=""\/?></label>$#', $markup);
     }
 }

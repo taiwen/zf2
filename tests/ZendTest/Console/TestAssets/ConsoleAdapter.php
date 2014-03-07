@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -23,6 +23,8 @@ class ConsoleAdapter extends AbstractAdapter
     public $testWidth = 80;
 
     public $testIsUtf8 = true;
+
+    public $writtenData = array();
 
     /**
      * Read a single line from the console input
@@ -85,5 +87,17 @@ class ConsoleAdapter extends AbstractAdapter
     public function getWidth()
     {
         return $this->testWidth;
+    }
+
+    /**
+     * Tracks exactly what data has been written
+     * @param string $text
+     * @param null $color
+     * @param null $bgColor
+     */
+    public function write($text, $color = null, $bgColor = null)
+    {
+        $this->writtenData[] = $text;
+        parent::write($text, $color, $bgColor);
     }
 }

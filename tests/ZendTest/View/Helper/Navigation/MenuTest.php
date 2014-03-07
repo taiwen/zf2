@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -168,6 +168,13 @@ class MenuTest extends AbstractTest
         $this->_helper->setUlClass('My_Nav');
         $expected = $this->_getExpected('menu/css.html');
         $this->assertEquals($expected, $this->_helper->render($this->_nav2));
+    }
+
+    public function testSetLiActiveCssClass()
+    {
+        $this->_helper->setLiActiveClass('activated');
+        $expected = $this->_getExpected('menu/css2.html');
+        $this->assertEquals(trim($expected), $this->_helper->render($this->_nav2));
     }
 
     public function testOptionEscapeLabelsAsTrue()

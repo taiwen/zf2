@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -43,9 +43,7 @@ class MethodReflectionTest extends \PHPUnit_Framework_TestCase
     public function testInternalFunctionBodyReturn()
     {
         $reflectionMethod = new MethodReflection('DOMDocument', 'validate');
-
-        $this->setExpectedException('Zend\Code\Reflection\Exception\InvalidArgumentException');
-        $body = $reflectionMethod->getBody();
+        $this->assertEmpty($reflectionMethod->getBody());
     }
 
     public function testGetBodyReturnsCorrectBody()
@@ -291,5 +289,23 @@ CONTENTS;
     {
         $reflectionMethod = new MethodReflection('DateTime', 'format');
         $this->assertEquals("", $reflectionMethod->getContents(false));
+    }
+
+    public function testGetContentsReturnsEmptyContentsOnEvaldCode()
+    {
+        $className = uniqid('MethodReflectionTestGenerated');
+
+        eval('name' . 'space ' . __NAMESPACE__ . '; cla' . 'ss ' . $className . '{fun' . 'ction foo(){}}');
+
+        $reflectionMethod = new MethodReflection(__NAMESPACE__ . '\\' . $className, 'foo');
+
+        $this->assertSame('', $reflectionMethod->getContents());
+        $this->assertSame('', $reflectionMethod->getBody());
+    }
+
+    public function testGetContentsReturnsEmptyContentsOnInternalCode()
+    {
+        $reflectionMethod = new MethodReflection('ReflectionClass', 'getName');
+        $this->assertSame('', $reflectionMethod->getContents());
     }
 }

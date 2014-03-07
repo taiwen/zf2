@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -190,9 +190,9 @@ class MethodReflection extends PhpReflectionMethod implements ReflectionInterfac
     public function getContents($includeDocBlock = true)
     {
         $fileName = $this->getFileName();
-        if (class_exists($this->class) && !$fileName) {
-            // php class
-            return '';
+
+        if ((class_exists($this->class) && !$fileName) || ! file_exists($fileName)) {
+            return ''; // probably from eval'd code, return empty
         }
 
         $lines = array_slice(
@@ -223,11 +223,10 @@ class MethodReflection extends PhpReflectionMethod implements ReflectionInterfac
      */
     public function getBody()
     {
-        $fileName = $this->getFileName();
-        if (false === $fileName) {
-            throw new Exception\InvalidArgumentException(
-                'Cannot determine internals functions body'
-            );
+        $fileName = $this->getDeclaringClass()->getFileName();
+
+        if (false === $fileName || ! file_exists($fileName)) {
+            return '';
         }
 
         $lines = array_slice(

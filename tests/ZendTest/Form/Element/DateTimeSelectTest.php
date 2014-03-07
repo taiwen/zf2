@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -121,5 +121,20 @@ class DateTimeSelectTest extends TestCase
         $this->assertEquals('03', $element->getHourElement()->getValue());
         $this->assertEquals('04', $element->getMinuteElement()->getValue());
         $this->assertEquals('00', $element->getSecondElement()->getValue());
+    }
+
+    public function testCloningPreservesCorrectValues()
+    {
+        $element = new DateTimeSelectElement();
+        $element->setValue(new DateTime('2014-01-02 03:04:05'));
+
+        $cloned = clone $element;
+
+        $this->assertEquals('2014', $cloned->getYearElement()->getValue());
+        $this->assertEquals('01', $cloned->getMonthElement()->getValue());
+        $this->assertEquals('02', $cloned->getDayElement()->getValue());
+        $this->assertEquals('03', $cloned->getHourElement()->getValue());
+        $this->assertEquals('04', $cloned->getMinuteElement()->getValue());
+        $this->assertEquals('05', $cloned->getSecondElement()->getValue());
     }
 }

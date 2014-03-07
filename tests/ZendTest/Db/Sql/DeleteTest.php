@@ -3,13 +3,16 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
-namespace Zend\Db\Sql;
+namespace ZendTest\Db\Sql;
 
+use Zend\Db\Sql\Delete;
+use Zend\Db\Sql\Predicate\IsNotNull;
 use Zend\Db\Sql\TableIdentifier;
+use Zend\Db\Sql\Where;
 
 class DeleteTest extends \PHPUnit_Framework_TestCase
 {
@@ -50,6 +53,8 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers Zend\Db\Sql\Delete::where
+     *
+     * @todo REMOVE THIS IN 3.x
      */
     public function testWhere()
     {
@@ -59,13 +64,13 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
         $this->delete->where(array('a = b'), Where::OP_OR);
         $this->delete->where(array('c1' => null));
         $this->delete->where(array('c2' => array(1, 2, 3)));
-        $this->delete->where(array(new \Zend\Db\Sql\Predicate\IsNotNull('c3')));
+        $this->delete->where(array(new IsNotNull('c3')));
         $this->delete->where(array('one' => 1, 'two' => 2));
         $where = $this->delete->where;
 
         $predicates = $this->readAttribute($where, 'predicates');
         $this->assertEquals('AND', $predicates[0][0]);
-        $this->assertInstanceOf('Zend\Db\Sql\Predicate\Expression', $predicates[0][1]);
+        $this->assertInstanceOf('Zend\Db\Sql\Predicate\Literal', $predicates[0][1]);
 
         $this->assertEquals('AND', $predicates[1][0]);
         $this->assertInstanceOf('Zend\Db\Sql\Predicate\Expression', $predicates[1][1]);
@@ -74,7 +79,7 @@ class DeleteTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Zend\Db\Sql\Predicate\Operator', $predicates[2][1]);
 
         $this->assertEquals('OR', $predicates[3][0]);
-        $this->assertInstanceOf('Zend\Db\Sql\Predicate\Expression', $predicates[3][1]);
+        $this->assertInstanceOf('Zend\Db\Sql\Predicate\Literal', $predicates[3][1]);
 
         $this->assertEquals('AND', $predicates[4][0]);
         $this->assertInstanceOf('Zend\Db\Sql\Predicate\IsNull', $predicates[4][1]);

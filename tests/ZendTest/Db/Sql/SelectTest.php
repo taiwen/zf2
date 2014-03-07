@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -12,6 +12,7 @@ namespace ZendTest\Db\Sql;
 use Zend\Db\Sql\Select;
 use Zend\Db\Sql\Expression;
 use Zend\Db\Sql\Where;
+use Zend\Db\Sql\Having;
 use Zend\Db\Sql\Predicate;
 use Zend\Db\Sql\TableIdentifier;
 use Zend\Db\Adapter\ParameterContainer;
@@ -469,6 +470,21 @@ class SelectTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @testdox unit test: Test having() returns same Select object (is chainable)
+     * @covers Zend\Db\Sql\Select::having
+     */
+    public function testHavingArgument1IsHavingObject()
+    {
+        $select = new Select;
+        $having = new Having();
+        $return = $select->having($having);
+        $this->assertSame($select, $return);
+        $this->assertSame($having, $select->getRawState('having'));
+
+        return $return;
+    }
+
+    /**
      * @testdox unit test: Test getRawState() returns information populated via having()
      * @covers Zend\Db\Sql\Select::getRawState
      * @depends testHaving
@@ -572,7 +588,7 @@ class SelectTest extends \PHPUnit_Framework_TestCase
         $select->order('foo asc');
         $this->assertEquals(array('foo asc'), $select->getRawState(Select::ORDER));
         $select->reset(Select::ORDER);
-        $this->assertNull($select->getRawState(Select::ORDER));
+        $this->assertEmpty($select->getRawState(Select::ORDER));
     }
 
     /**
@@ -1157,6 +1173,16 @@ class SelectTest extends \PHPUnit_Framework_TestCase
             'processOffset' => array('?')
         );
 
+        // functions without table
+        $select46 = new Select;
+        $select46->columns(array(
+            new Expression('SOME_DB_FUNCTION_ONE()'),
+            'foo' => new Expression('SOME_DB_FUNCTION_TWO()'),
+        ));
+        $sqlPrep46 = 'SELECT SOME_DB_FUNCTION_ONE() AS Expression1, SOME_DB_FUNCTION_TWO() AS "foo"';
+        $sqlStr46 = 'SELECT SOME_DB_FUNCTION_ONE() AS Expression1, SOME_DB_FUNCTION_TWO() AS "foo"';
+        $params46 = array();
+        $internalTests46 = array();
         /**
          * $select = the select object
          * $sqlPrep = the sql as a result of preparation
@@ -1213,6 +1239,7 @@ class SelectTest extends \PHPUnit_Framework_TestCase
             array($select43, $sqlPrep43, array(),    $sqlStr43, $internalTests43),
             array($select44, $sqlPrep44, array(),    $sqlStr44, $internalTests44),
             array($select45, $sqlPrep45, $params45,  $sqlStr45, $internalTests45),
+            array($select46, $sqlPrep46, $params46,  $sqlStr46, $internalTests46),
         );
     }
 }

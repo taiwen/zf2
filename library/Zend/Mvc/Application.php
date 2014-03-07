@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -247,10 +247,16 @@ class Application implements
     public static function init($configuration = array())
     {
         $smConfig = isset($configuration['service_manager']) ? $configuration['service_manager'] : array();
-        $listeners = isset($configuration['listeners']) ? $configuration['listeners'] : array();
         $serviceManager = new ServiceManager(new Service\ServiceManagerConfig($smConfig));
         $serviceManager->setService('ApplicationConfig', $configuration);
         $serviceManager->get('ModuleManager')->loadModules();
+
+        $listenersFromAppConfig     = isset($configuration['listeners']) ? $configuration['listeners'] : array();
+        $config                     = $serviceManager->get('Config');
+        $listenersFromConfigService = isset($config['listeners']) ? $config['listeners'] : array();
+
+        $listeners = array_unique(array_merge($listenersFromConfigService, $listenersFromAppConfig));
+
         return $serviceManager->get('Application')->bootstrap($listeners);
     }
 

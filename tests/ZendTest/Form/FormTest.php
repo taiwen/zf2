@@ -3,7 +3,7 @@
  * Zend Framework (http://framework.zend.com/)
  *
  * @link      http://github.com/zendframework/zf2 for the canonical source repository
- * @copyright Copyright (c) 2005-2013 Zend Technologies USA Inc. (http://www.zend.com)
+ * @copyright Copyright (c) 2005-2014 Zend Technologies USA Inc. (http://www.zend.com)
  * @license   http://framework.zend.com/license/new-bsd New BSD License
  */
 
@@ -15,6 +15,7 @@ use Zend\Form\Element;
 use Zend\Form\Factory;
 use Zend\Form\Fieldset;
 use Zend\Form\Form;
+use Zend\InputFilter\BaseInputFilter;
 use Zend\InputFilter\InputFilter;
 use Zend\InputFilter\Factory as InputFilterFactory;
 use Zend\Stdlib\Hydrator;
@@ -1426,7 +1427,7 @@ class FormTest extends TestCase
             'name' => 'foo'
         ));
 
-        // Add an hydrator that ignores if values does not exist in the
+        // Add a hydrator that ignores if values does not exist in the
         $fieldset->setObject(new Entity\SimplePublicProperty());
         $fieldset->setHydrator(new \Zend\Stdlib\Hydrator\ObjectProperty());
 
@@ -1867,5 +1868,55 @@ class FormTest extends TestCase
 
         $isValid = $this->form->isValid();
         $this->assertEquals($data, $this->form->getData());
+    }
+
+    public function testFormElementValidatorsMergeIntoAppliedInputFilter()
+    {
+        $this->form->add(array(
+            'name' => 'importance',
+            'type'  => 'Zend\Form\Element\Select',
+            'options' => array(
+                'label' => 'Importance',
+                'empty_option' => '',
+                'value_options' => array(
+                    'normal' => 'Normal',
+                    'important' => 'Important'
+                ),
+            ),
+        ));
+
+        $inputFilter = new BaseInputFilter();
+        $factory     = new InputFilterFactory();
+        $inputFilter->add($factory->createInput(array(
+            'name'     => 'importance',
+            'required' => false,
+        )));
+
+        $data = array(
+            'importance' => 'unimporant'
+        );
+
+        $this->form->setInputFilter($inputFilter);
+        $this->form->setData($data);
+        $this->assertFalse($this->form->isValid());
+
+        $data = array();
+
+        $this->form->setData($data);
+        $this->assertTrue($this->form->isValid());
+    }
+
+    public function testCanSetUseInputFilterDefaultsViaArray()
+    {
+        $spec = array(
+            'name' => 'test',
+            'options' => array(
+                'use_input_filter_defaults' => false
+            )
+        );
+
+        $factory = new Factory();
+        $this->form = $factory->createForm($spec);
+        $this->assertFalse($this->form->useInputFilterDefaults());
     }
 }
