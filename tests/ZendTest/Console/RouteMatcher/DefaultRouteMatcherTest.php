@@ -845,6 +845,28 @@ class DefaultRouteMatcherTest extends \PHPUnit_Framework_TestCase
                     'something'   => null,
                 )
             ),
+            'value-optional-with-mixed-case' => array(
+                '[<mixedCaseParam>] [--bar=]',
+                array('aBc', '--bar','abc'),
+                array(
+                    'mixedCaseParam' => 'aBc',
+                    'foo'            => null,
+                    'bar'            => 'abc',
+                    'baz'            => null,
+                    'something'      => null,
+                )
+            ),
+            'value-optional-with-upper-case' => array(
+                '[<UPPERCASEPARAM>] [--bar=]',
+                array('aBc', '--bar', 'abc'),
+                array(
+                    'UPPERCASEPARAM' => 'aBc',
+                    'foo'            => null,
+                    'bar'            => 'abc',
+                    'baz'            => null,
+                    'something'      => null,
+                )
+            ),
             /**
              * @bug ZF2-5671
              * @link https://github.com/zendframework/zf2/issues/5671
@@ -852,7 +874,7 @@ class DefaultRouteMatcherTest extends \PHPUnit_Framework_TestCase
             'mandatory-literal-camel-case' => array(
                 'FooBar',
                 array('FooBar'),
-                array(),
+                array('FooBar' => null),
             ),
             'mandatory-literal-camel-case-no-match' => array(
                 'FooBar',
@@ -862,7 +884,7 @@ class DefaultRouteMatcherTest extends \PHPUnit_Framework_TestCase
             'optional-literal-camel-case' => array(
                 '[FooBar]',
                 array('FooBar'),
-                array(),
+                array('FooBar' => true),
             ),
             'optional-literal-camel-case-no-match' => array(
                 '[FooBar]',
@@ -872,14 +894,14 @@ class DefaultRouteMatcherTest extends \PHPUnit_Framework_TestCase
             'optional-literal-alternative-camel-case' => array(
                 '[ FooBar | FoozBar ]',
                 array('FooBar'),
-                array(),
+                array('FooBar' => true),
             ),
-            'required-literal-alternative-camel-case' => array(
+            'mandatory-literal-alternative-camel-case' => array(
                 '( FooBar | FoozBar )',
                 array('FooBar'),
-                array(),
+                array('FooBar' => true),
             ),
-            'required-literal-alternative-camel-case-no-match' => array(
+            'mandatory-literal-alternative-camel-case-no-match' => array(
                 '( FooBar | FoozBar )',
                 array('baz'),
                 null,

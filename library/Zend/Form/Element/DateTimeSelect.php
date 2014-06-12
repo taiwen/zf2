@@ -220,6 +220,10 @@ class DateTimeSelect extends DateSelect
             }
         }
 
+        if (null === $value) {
+            $value = new PhpDateTime();
+        }
+
         if ($value instanceof PhpDateTime) {
             $value = array(
                 'year'   => $value->format('Y'),

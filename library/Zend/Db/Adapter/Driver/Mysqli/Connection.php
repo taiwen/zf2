@@ -237,7 +237,7 @@ class Connection implements ConnectionInterface, Profiler\ProfilerAwareInterface
         if ($this->resource instanceof \mysqli) {
             $this->resource->close();
         }
-        unset($this->resource);
+        $this->resource = null;
     }
 
     /**
@@ -253,6 +253,16 @@ class Connection implements ConnectionInterface, Profiler\ProfilerAwareInterface
 
         $this->resource->autocommit(false);
         $this->inTransaction = true;
+    }
+
+    /**
+     * In transaction
+     *
+     * @return bool
+     */
+    public function inTransaction()
+    {
+        return $this->inTransaction;
     }
 
     /**

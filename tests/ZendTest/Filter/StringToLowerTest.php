@@ -10,7 +10,6 @@
 namespace ZendTest\Filter;
 
 use Zend\Filter\StringToLower as StringToLowerFilter;
-use Zend\Stdlib\ErrorHandler;
 
 /**
  * @group      Zend_Filter
@@ -20,7 +19,7 @@ class StringToLowerTest extends \PHPUnit_Framework_TestCase
     /**
      * Zend_Filter_StringToLower object
      *
-     * @var Zend_Filter_StringToLower
+     * @var StringToLowerFilter
      */
     protected $_filter;
 

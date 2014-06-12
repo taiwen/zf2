@@ -439,12 +439,14 @@ class FactoryTest extends TestCase
 
         $inputFilter = $factory->createInputFilter(array(
             'type'        => 'Zend\InputFilter\CollectionInputFilter',
+            'required'    => true,
             'inputfilter' => new InputFilter(),
-            'count'       => 3
+            'count'       => 3,
         ));
 
         $this->assertInstanceOf('Zend\InputFilter\CollectionInputFilter', $inputFilter);
         $this->assertInstanceOf('Zend\InputFilter\InputFilter', $inputFilter->getInputFilter());
+        $this->assertTrue($inputFilter->getIsRequired());
         $this->assertEquals(3, $inputFilter->getCount());
     }
 
@@ -580,5 +582,26 @@ class FactoryTest extends TestCase
         $this->assertTrue($factory->createInput(array('break_on_failure' => true))->breakOnFailure());
 
         $this->assertFalse($factory->createInput(array('break_on_failure' => false))->breakOnFailure());
+    }
+
+    public function testCanCreateInputFilterWithNullInputs()
+    {
+        $factory = new Factory();
+
+        $inputFilter = $factory->createInputFilter(array(
+            'foo' => array(
+                'name' => 'foo',
+            ),
+            'bar' => null,
+            'baz' => array(
+                'name' => 'baz',
+            ),
+        ));
+
+        $this->assertInstanceOf('Zend\InputFilter\InputFilter', $inputFilter);
+        $this->assertEquals(2, count($inputFilter));
+        $this->assertTrue($inputFilter->has('foo'));
+        $this->assertFalse($inputFilter->has('bar'));
+        $this->assertTrue($inputFilter->has('baz'));
     }
 }

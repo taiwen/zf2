@@ -10,7 +10,6 @@
 namespace ZendTest\Filter;
 
 use Zend\Filter\StripTags as StripTagsFilter;
-use Zend\Stdlib\ErrorHandler;
 
 /**
  * @group      Zend_Filter
@@ -20,7 +19,7 @@ class StripTagsTest extends \PHPUnit_Framework_TestCase
     /**
      * Zend_Filter_StripTags object
      *
-     * @var Zend_Filter_StripTags
+     * @var StripTagsFilter
      */
     protected $_filter;
 

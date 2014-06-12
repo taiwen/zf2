@@ -10,6 +10,7 @@
 namespace Zend\Form\View\Helper;
 
 use Zend\Form\Element\Button;
+use Zend\Form\Element\MonthSelect;
 use Zend\Form\ElementInterface;
 use Zend\Form\Exception;
 use Zend\Form\LabelAwareInterface;
@@ -90,10 +91,8 @@ class FormRow extends AbstractHelper
             return $this;
         }
 
-        if ($labelPosition !== null) {
-            $this->setLabelPosition($labelPosition);
-        } elseif ($this->labelPosition === null) {
-            $this->setLabelPosition(self::LABEL_PREPEND);
+        if (is_null($labelPosition)) {
+            $labelPosition = $this->getLabelPosition();
         }
 
         if ($renderErrors !== null) {
@@ -104,17 +103,18 @@ class FormRow extends AbstractHelper
             $this->setPartial($partial);
         }
 
-        return $this->render($element);
+        return $this->render($element, $labelPosition);
     }
 
     /**
      * Utility form helper that renders a label (if it exists), an element and errors
      *
      * @param  ElementInterface $element
+     * @param  null|string      $labelPosition
      * @throws \Zend\Form\Exception\DomainException
      * @return string
      */
-    public function render(ElementInterface $element)
+    public function render(ElementInterface $element, $labelPosition = null)
     {
         $escapeHtmlHelper    = $this->getEscapeHtmlHelper();
         $labelHelper         = $this->getLabelHelper();
@@ -123,6 +123,10 @@ class FormRow extends AbstractHelper
 
         $label           = $element->getLabel();
         $inputErrorClass = $this->getInputErrorClass();
+
+        if (is_null($labelPosition)) {
+            $labelPosition = $this->labelPosition;
+        }
 
         if (isset($label) && '' !== $label) {
             // Translate the label
@@ -146,7 +150,7 @@ class FormRow extends AbstractHelper
                 'element'           => $element,
                 'label'             => $label,
                 'labelAttributes'   => $this->labelAttributes,
-                'labelPosition'     => $this->labelPosition,
+                'labelPosition'     => $labelPosition,
                 'renderErrors'      => $this->renderErrors,
             );
 
@@ -159,7 +163,9 @@ class FormRow extends AbstractHelper
 
         $elementString = $elementHelper->render($element);
 
-        if (isset($label) && '' !== $label) {
+        // hidden elements do not need a <label> -https://github.com/zendframework/zf2/issues/5607
+        $type = $element->getAttribute('type');
+        if (isset($label) && '' !== $label && $type !== 'hidden') {
 
             $labelAttributes = array();
 
@@ -177,8 +183,10 @@ class FormRow extends AbstractHelper
 
             // Multicheckbox elements have to be handled differently as the HTML standard does not allow nested
             // labels. The semantic way is to group them inside a fieldset
-            $type = $element->getAttribute('type');
-            if ($type === 'multi_checkbox' || $type === 'radio') {
+            if ($type === 'multi_checkbox'
+                || $type === 'radio'
+                || $element instanceof MonthSelect
+            ) {
                 $markup = sprintf(
                     '<fieldset><legend>%s</legend>%s</fieldset>',
                     $label,
@@ -208,7 +216,7 @@ class FormRow extends AbstractHelper
                     $labelOpen = $labelClose = $label = '';
                 }
 
-                switch ($this->labelPosition) {
+                switch ($labelPosition) {
                     case self::LABEL_PREPEND:
                         $markup = $labelOpen . $label . $elementString . $labelClose;
                         break;
